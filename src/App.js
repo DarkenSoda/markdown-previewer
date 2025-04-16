@@ -1,48 +1,52 @@
-import './App.css';
-import React, {useState} from 'react';
-import {marked} from 'marked'
+import "./App.css";
+import React, { useState, useEffect } from "react";
+import { marked } from "marked";
+import useLocalStorage from "./storage/useLocalStorage";
+import DocsTab from "./docTab";
 
 const App = () => {
-  const [code, setCode] = useState('## Hello')
-  const [compiled, setCompiled] = useState('<h2 id="hello">Hello</h2>')
-  const [hide, hidePreview] = useState(true)
+	const [code, setCode] = useLocalStorage("markdown", "## Hello");
+	const [compiled, setCompiled] = useState(marked.parse(code));
+	const [tab, setTab] = useState("markdown");
 
-  const openMD = () => {
-    console.log(0)
-    hidePreview(true)
-  }
+	useEffect(() => {
+		setCompiled(marked.parse(code));
+	}, [code]);
 
-  const openPreview = () => {
-    console.log(0)
-    hidePreview(false)
-  }
+	return (
+		<>
+			<h1>MarkDown Previewer React App</h1>
+			<div className="container">
+				<div className="btns">
+					<button onClick={() => setTab("markdown")} className="btn">
+						MarkDown
+					</button>
+					<button onClick={() => setTab("preview")} className="btn">
+						Preview
+					</button>
+					<button onClick={() => setTab("docs")} className="btn">
+						Docs
+					</button>
+				</div>
 
-  const handleChange = (e) => {
-    setCode(e.target.value)
-    setCompiled(marked.parse(e.target.value))
-  }
+				{tab === "markdown" && (
+					<textarea
+						onChange={(e) => setCode(e.target.value)}
+						value={code}
+					/>
+				)}
 
-  return (
-    <>
-      <h1>MarkDown Previewer React App</h1>
-      <div className="container">
-        <div className="btns">
-          <button onClick={openMD} className="btn">MarkDown</button>
-          <button onClick={openPreview}>Preview</button>
-        </div>
-        {
-        hide ? 
-          <div>
-            <textarea onChange={handleChange} value={code}/>
-          </div> : 
-          <div>
-            <textarea value={compiled}/>
-          </div>
-        }
-      </div>
-    </>
-  )
-}
+				{tab === "preview" && (
+					<div
+						className="preview"
+						dangerouslySetInnerHTML={{ __html: compiled }}
+					/>
+				)}
 
+				{tab === "docs" && <DocsTab />}
+			</div>
+		</>
+	);
+};
 
 export default App;
